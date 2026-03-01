@@ -7,8 +7,11 @@ export function Login({ onLogin }: { onLogin: (name: string) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState('🦊');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const avatars = ['🦊', '🐱', '🐼', '🐨', '🦁', '🐰', '🐯', '🐻'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +38,7 @@ export function Login({ onLogin }: { onLogin: (name: string) => void }) {
       else if (data.session) {
         // Create profile
         const { error: profileError } = await supabase.from('profiles').insert([
-          { id: data.session.user.id, name: name.trim() }
+          { id: data.session.user.id, name: name.trim(), avatar }
         ]);
         if (profileError) setErrorMsg(profileError.message);
       }
@@ -57,15 +60,33 @@ export function Login({ onLogin }: { onLogin: (name: string) => void }) {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {!isLogin && (
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre completo..."
-              className="px-4 py-4 rounded-xl bg-stone-100 border border-stone-300 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-400 text-lg font-medium shadow-inner"
-              required={!isLogin}
-              maxLength={40}
-            />
+            <>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Tu nombre completo..."
+                className="px-4 py-4 rounded-xl bg-stone-100 border border-stone-300 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-pink-400 text-lg font-medium shadow-inner"
+                required={!isLogin}
+                maxLength={40}
+              />
+
+              <div>
+                <p className="text-stone-600 mb-2 mt-2 text-sm font-semibold">Elige tu Avatar:</p>
+                <div className="flex flex-wrap justify-center gap-2 mb-2">
+                  {avatars.map(a => (
+                    <button
+                      key={a}
+                      type="button"
+                      onClick={() => setAvatar(a)}
+                      className={`text-3xl p-2 rounded-full transition-all ${avatar === a ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-110 shadow-md' : 'bg-stone-50 hover:bg-stone-200 hover:scale-105 border border-stone-100'}`}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           <input

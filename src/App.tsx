@@ -11,6 +11,7 @@ import { Game } from './components/Game';
 import { GameOver } from './components/GameOver';
 import { Footer } from './components/Footer';
 import { Ranking } from './components/Ranking';
+import { MusicPlayer } from './components/MusicPlayer';
 import { GameType } from './utils/gameLogic';
 import { supabase } from './lib/supabase';
 import { Session } from '@supabase/supabase-js';
@@ -18,6 +19,7 @@ import { Session } from '@supabase/supabase-js';
 export default function App() {
   const [gameState, setGameState] = useState<'login' | 'map' | 'menu' | 'playing' | 'gameover' | 'ranking'>('login');
   const [userName, setUserName] = useState('');
+  const [userAvatar, setUserAvatar] = useState('🦊');
   const [gameType, setGameType] = useState<GameType>('suma');
   const [score, setScore] = useState(0);
   const [session, setSession] = useState<Session | null>(null);
@@ -39,6 +41,7 @@ export default function App() {
       } else {
         setGameState('login');
         setUserName('');
+        setUserAvatar('🦊');
       }
     });
 
@@ -46,9 +49,10 @@ export default function App() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('name').eq('id', userId).single();
+    const { data } = await supabase.from('profiles').select('name, avatar').eq('id', userId).single();
     if (data) {
       setUserName(data.name);
+      if (data.avatar) setUserAvatar(data.avatar);
       setGameState('map');
     }
   };
@@ -71,9 +75,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-math-pattern flex flex-col font-sans pb-24">
+    <div className="min-h-screen bg-math-pattern flex flex-col font-sans pb-24 relative">
+      <MusicPlayer />
       {gameState === 'login' && <Login onLogin={() => { }} />}
-      {gameState === 'map' && <Map userName={userName} onSelectLevel={handleSelectLevel} onOpenRanking={() => setGameState('ranking')} />}
+      {gameState === 'map' && <Map userName={userName} userAvatar={userAvatar} onSelectLevel={handleSelectLevel} onOpenRanking={() => setGameState('ranking')} />}
       {gameState === 'ranking' && <Ranking onBack={() => setGameState('map')} />}
       {gameState === 'menu' && <Menu onStart={startGame} onBack={() => setGameState('map')} />}
       {gameState === 'playing' && <Game type={gameType} onGameOver={handleGameOver} onQuit={() => setGameState('menu')} onRestart={() => startGame(gameType)} />}

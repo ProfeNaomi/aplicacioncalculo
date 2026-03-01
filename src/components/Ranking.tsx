@@ -5,6 +5,7 @@ import { Trophy, ArrowLeft, Medal } from 'lucide-react';
 interface RankEntry {
     id: string;
     name: string;
+    avatar: string;
     score: number;
 }
 
@@ -22,18 +23,24 @@ export function Ranking({ onBack }: { onBack: () => void }) {
           score,
           profiles (
             id,
-            name
+            name,
+            avatar
           )
         `);
 
             if (!error && data) {
                 // Group by user
-                const userScores: Record<string, { id: string, name: string, score: number }> = {};
+                const userScores: Record<string, { id: string, name: string, avatar: string, score: number }> = {};
                 data.forEach((entry: any) => {
                     if (!entry.profiles) return;
                     const uId = entry.profiles.id;
                     if (!userScores[uId]) {
-                        userScores[uId] = { id: uId, name: entry.profiles.name, score: 0 };
+                        userScores[uId] = {
+                            id: uId,
+                            name: entry.profiles.name,
+                            avatar: entry.profiles.avatar || '🦊',
+                            score: 0
+                        };
                     }
                     userScores[uId].score += entry.score;
                 });
@@ -85,8 +92,9 @@ export function Ranking({ onBack }: { onBack: () => void }) {
 
                                 {index < 3 && <Medal className={`shrink-0 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-stone-400' : 'text-orange-400'}`} size={24} />}
 
-                                <div className="flex-1 font-bold text-lg text-stone-800 truncate">
-                                    {player.name}
+                                <div className="flex-1 font-bold text-lg text-stone-800 flex items-center gap-2 truncate">
+                                    <span className="text-2xl">{player.avatar}</span>
+                                    <span className="truncate">{player.name}</span>
                                 </div>
                                 <div className="font-black text-xl text-indigo-500">
                                     {player.score} <span className="text-xs text-stone-400 font-medium">pts</span>

@@ -11,7 +11,7 @@ const levels = [
   { id: 6, name: 'Números Complejos', locked: true },
 ];
 
-export function Map({ userName, onSelectLevel, onOpenRanking }: { userName: string, onSelectLevel: (levelId: number) => void, onOpenRanking: () => void }) {
+export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { userName: string, userAvatar: string, onSelectLevel: (levelId: number) => void, onOpenRanking: () => void }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -42,9 +42,13 @@ export function Map({ userName, onSelectLevel, onOpenRanking }: { userName: stri
             Mapa de <span className="text-pink-500">Progreso</span>
           </h2>
         </div>
-        <p className="text-stone-600 text-center mb-12 text-lg">
-          Hola <span className="font-bold text-stone-800">{userName}</span>, selecciona un nivel para jugar
-        </p>
+
+        <div className="flex items-center justify-center gap-3 mb-12">
+          <div className="text-4xl bg-white p-2 rounded-full shadow-sm">{userAvatar || '🦊'}</div>
+          <p className="text-stone-600 text-lg m-0">
+            Hola <span className="font-bold text-stone-800 text-xl">{userName}</span>,<br />selecciona un nivel para jugar
+          </p>
+        </div>
 
         <div className="flex flex-col gap-8 relative px-4 md:px-0">
           {/* Línea conectora central (visible en desktop) */}

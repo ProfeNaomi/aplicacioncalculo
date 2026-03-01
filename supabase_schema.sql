@@ -2,8 +2,12 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   name TEXT NOT NULL,
+  avatar TEXT DEFAULT '🦊',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Si la tabla ya existía antes, nos aseguramos de que tenga la nueva columna de avatar
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT '🦊';
 
 -- 2. Crear tabla de puntajes máximos si no existe
 CREATE TABLE IF NOT EXISTS public.high_scores (

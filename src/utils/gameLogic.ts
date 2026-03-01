@@ -1,4 +1,4 @@
-export type GameType = 'suma' | 'resta' | 'multiplicacion' | 'division' | 'factores' | 'combinada';
+export type GameType = 'suma' | 'resta' | 'multiplicacion' | 'division' | 'factores' | 'combinada' | 'potencia' | 'raiz';
 
 export interface Question {
   text: string;
@@ -18,7 +18,7 @@ export function generateQuestion(type: GameType, difficulty: number, history: Se
 
 function createQuestion(type: GameType, difficulty: number): Question {
   // difficulty starts at 1, increases every 4 points now
-  
+
   switch (type) {
     case 'suma': {
       const max = 10 + Math.floor(difficulty * 6);
@@ -81,6 +81,26 @@ function createQuestion(type: GameType, difficulty: number): Question {
       } else {
         return { text: `${a} × ${b} + ${c}`, answer: a * b + c };
       }
+    }
+    case 'potencia': {
+      const maxBase = 5 + difficulty;
+      const base = Math.floor(Math.random() * maxBase) + 2; // 2 to (5 + diff)
+
+      // Select exponent 2 or 3
+      const isSquared = Math.random() > 0.3; // 70% chance of square, 30% cube
+      const exp = isSquared ? 2 : 3;
+
+      // Limit cubes to smaller numbers initially
+      const finalBase = exp === 3 && base > 6 ? (Math.floor(Math.random() * 4) + 2) : base;
+
+      const symbol = exp === 2 ? '²' : '³';
+      return { text: `${finalBase}${symbol}`, answer: Math.pow(finalBase, exp) };
+    }
+    case 'raiz': {
+      const maxRoot = 5 + difficulty * 2;
+      const root = Math.floor(Math.random() * maxRoot) + 3; // Answer is from 3 to ...
+      const perfectSquare = root * root;
+      return { text: `√${perfectSquare}`, answer: root };
     }
   }
 }

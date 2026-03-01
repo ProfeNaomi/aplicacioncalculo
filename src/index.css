@@ -8,3 +8,35 @@
   background-size: 40px 40px;
   background-position: -2px -2px;
 }
+
+@keyframes twinkle {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+  100% { opacity: 0.2; transform: scale(0.8); }
+}
+
+.bg-universe {
+  background: radial-gradient(circle at top, #3b0764 0%, #0f172a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-universe::before, .bg-universe::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 4px),
+    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+  background-size: 550px 550px, 350px 350px, 250px 250px;
+  background-position: 0 0, 40px 60px, 130px 270px;
+  animation: twinkle 8s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-universe::after {
+  background-size: 400px 400px, 200px 200px, 150px 150px;
+  background-position: 100px 150px, 80px 120px, 230px 370px;
+  animation: twinkle 12s infinite ease-in-out reverse;
+}
