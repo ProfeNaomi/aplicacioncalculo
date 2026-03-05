@@ -74,8 +74,8 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
               key={w}
               onClick={() => setCurrentWorld(w)}
               className={`px-6 py-3 rounded-2xl font-black text-lg shadow-md transition-all flex items-center gap-2 border-2 ${currentWorld === w
-                  ? 'bg-pink-500 text-white border-pink-600 scale-105 shadow-pink-500/50'
-                  : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:scale-105'
+                ? 'bg-pink-500 text-white border-pink-600 scale-105 shadow-pink-500/50'
+                : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:scale-105'
                 }`}
             >
               Planeta {worldNames[w]}
@@ -91,9 +91,8 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
         </div>
 
         <div className="flex items-center justify-center gap-3 mb-10">
-          <div className="text-4xl bg-white p-2 rounded-full shadow-sm">{userAvatar || '🦊'}</div>
-          <p className="text-stone-600 text-lg m-0 leading-tight">
-            Hola <span className="font-bold text-stone-800 text-xl">{userName}</span>,<br />selecciona un nivel para jugar
+          <p className="text-stone-600 text-xl m-0 leading-tight text-center">
+            Hola <span className="font-bold text-stone-800 text-2xl">{userName}</span>,<br />tu <span className="text-3xl">{userAvatar || '🦊'}</span> te espera en los planetas descubiertos.
           </p>
         </div>
 
@@ -108,16 +107,25 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
             return (
               <div key={level.id} className={`relative z-10 flex items-center gap-6 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} w-full`}>
 
-                {/* Nodo Circular */}
+                {/* Nodo Circular (Planetita) */}
                 <div
-                  className={`w-16 h-16 shrink-0 rounded-full flex items-center justify-center shadow-lg border-4 z-10
+                  className={`relative w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-full flex items-center justify-center shadow-xl border-4 z-10 overflow-hidden
                     ${level.locked
-                      ? 'bg-stone-200 border-stone-300'
-                      : 'bg-indigo-500 border-indigo-300 cursor-pointer hover:scale-110 transition-transform hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]'
+                      ? 'bg-stone-300 border-stone-400'
+                      : 'bg-gradient-to-br from-indigo-400 to-purple-600 border-indigo-300 cursor-pointer hover:scale-110 transition-transform hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]'
                     } md:mx-auto`}
                   onClick={() => !level.locked && onSelectLevel(currentWorld, level.id)}
                 >
-                  {level.locked ? <Lock className="text-stone-400" size={24} /> : <Play className="text-white ml-1" size={28} />}
+                  {/* Detalles de iluminación para que parezca un planeta */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.4)_0%,_transparent_60%)]"></div>
+
+                  {level.locked ? (
+                    <Lock className="text-stone-500 z-10" size={32} />
+                  ) : (
+                    <div className="z-10 text-5xl md:text-6xl drop-shadow-md animate-bounce-slow">
+                      {userAvatar || '🦊'}
+                    </div>
+                  )}
                 </div>
 
                 {/* Tarjeta de Nivel */}
