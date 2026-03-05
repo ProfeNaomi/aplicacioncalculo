@@ -1,4 +1,5 @@
-export type GameType = 'suma' | 'resta' | 'multiplicacion' | 'division' | 'factores' | 'combinada' | 'potencia' | 'raiz';
+export type World = 'numeros' | 'algebra' | 'geometria' | 'estadistica';
+export type GameType = 'suma' | 'resta' | 'multiplicacion' | 'division' | 'factores' | 'combinada' | 'potencia' | 'raiz' | 'factorizacion' | 'producto_notable';
 
 export interface Question {
   text: string;
@@ -10,10 +11,84 @@ export function generateQuestion(type: GameType, difficulty: number, history: Se
   let q: Question;
   let attempts = 0;
   do {
-    q = createQuestion(type, difficulty);
+    if (type === 'factorizacion' || type === 'producto_notable') {
+      q = createAlgebraQuestion(type, difficulty);
+    } else {
+      q = createQuestion(type, difficulty);
+    }
     attempts++;
   } while (history.has(q.text) && attempts < 50);
   return q;
+}
+
+function createAlgebraQuestion(type: 'factorizacion' | 'producto_notable', difficulty: number): Question {
+  const vars = ['x', 'y', 'a', 'b', 'm', 'n'];
+  const v1 = vars[Math.floor(Math.random() * vars.length)];
+  const v2 = (Math.random() > 0.5)
+    ? vars.filter(v => v !== v1)[Math.floor(Math.random() * (vars.length - 1))]
+    : (Math.floor(Math.random() * 5) + 1).toString();
+
+  const c1Num = Math.floor(Math.random() * 5) + 2;
+  const c1 = c1Num.toString();
+  const c2Num = Math.floor(Math.random() * 5) + 1;
+  const c2 = c2Num.toString();
+
+  const cases = [
+    // 1. Factor común: c1*x² + c1*c2*x -> c1*x(x + c2)
+    { exp: `${c1}${v1}² + ${c1Num * c2Num}${v1}`, fac: `${c1}${v1}(${v1} + ${c2})` },
+    // 2. Cuadrado de binomio (positivo): x² + 2*c2*x + c2² -> (x + c2)²
+    { exp: `${v1}² + ${2 * c2Num}${v1} + ${c2Num * c2Num}`, fac: `(${v1} + ${c2})²` },
+    // 3. Cuadrado de binomio (negativo): x² - 2*c2*x + c2² -> (x - c2)²
+    { exp: `${v1}² - ${2 * c2Num}${v1} + ${c2Num * c2Num}`, fac: `(${v1} - ${c2})²` },
+    // 4. Suma por diferencia: x² - c2² -> (x + c2)(x - c2)
+    { exp: `${v1}² - ${c2Num * c2Num}`, fac: `(${v1} + ${c2})(${v1} - ${c2})` },
+    // 5. Suma de cubos: x³ + c2³ -> (x + c2)(x² - c2*x + c2²)
+    { exp: `${v1}³ + ${c2Num * c2Num * c2Num}`, fac: `(${v1} + ${c2})(${v1}² - ${c2Num}${v1} + ${c2Num * c2Num})` },
+    // 6. Diferencia de cubos: x³ - c2³ -> (x - c2)(x² + c2*x + c2²)
+    { exp: `${v1}³ - ${c2Num * c2Num * c2Num}`, fac: `(${v1} - ${c2})(${v1}² + ${c2Num}${v1} + ${c2Num * c2Num})` },
+    // 7. Suma al cubo: x³ + 3*c2*x² + 3*c2²*x + c2³ -> (x + c2)³
+    { exp: `${v1}³ + ${3 * c2Num}${v1}² + ${3 * c2Num * c2Num}${v1} + ${c2Num * c2Num * c2Num}`, fac: `(${v1} + ${c2})³` },
+    // 8. Diferencia al cubo: x³ - 3*c2*x² + 3*c2²*x - c2³ -> (x - c2)³
+    { exp: `${v1}³ - ${3 * c2Num}${v1}² + ${3 * c2Num * c2Num}${v1} - ${c2Num * c2Num * c2Num}`, fac: `(${v1} - ${c2})³` },
+  ];
+
+  const selectedCase = cases[Math.floor(Math.random() * cases.length)];
+
+  // Wrong options can be other cases with same variables, or slightly mutated signs
+  const optionsSet = new Set<string>();
+  const isFactoring = type === 'factorizacion';
+  const correctAnswer = isFactoring ? selectedCase.fac : selectedCase.exp;
+  const questionText = isFactoring ? selectedCase.exp : selectedCase.fac;
+
+  optionsSet.add(correctAnswer);
+
+  let genAttempts = 0;
+  while (optionsSet.size < 4 && genAttempts < 50) {
+    const fakeC2Num = Math.floor(Math.random() * 5) + 1;
+    const fakeCase = cases[Math.floor(Math.random() * cases.length)];
+    // Just modify the string of the fake case slightly to make options
+    let fakeStr = isFactoring ? fakeCase.fac : fakeCase.exp;
+    fakeStr = fakeStr.replace(new RegExp(c2, 'g'), fakeC2Num.toString());
+
+    // Add mutations like changing + to - randomly
+    if (Math.random() > 0.5) fakeStr = fakeStr.replace('+', '-');
+
+    if (fakeStr !== correctAnswer) {
+      optionsSet.add(fakeStr);
+    }
+    genAttempts++;
+  }
+
+  // fallback if less than 4
+  while (optionsSet.size < 4) {
+    optionsSet.add(correctAnswer + ' + ' + optionsSet.size); // should not happen often due to random
+  }
+
+  return {
+    text: questionText,
+    answer: correctAnswer,
+    options: Array.from(optionsSet).sort(() => Math.random() - 0.5)
+  };
 }
 
 function createQuestion(type: GameType, difficulty: number): Question {

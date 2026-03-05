@@ -2,16 +2,47 @@ import React from 'react';
 import { Lock, Play, Map as MapIcon, LogOut, Trophy } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const levels = [
-  { id: 1, name: 'Números Naturales', locked: false },
-  { id: 2, name: 'Números Enteros', locked: true },
-  { id: 3, name: 'Números Racionales', locked: true },
-  { id: 4, name: 'Números Irracionales', locked: true },
-  { id: 5, name: 'Números Reales', locked: true },
-  { id: 6, name: 'Números Complejos', locked: true },
-];
+export type World = 'numeros' | 'algebra' | 'geometria' | 'estadistica';
 
-export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { userName: string, userAvatar: string, onSelectLevel: (levelId: number) => void, onOpenRanking: () => void }) {
+const worldsData: Record<World, { id: number, name: string, locked: boolean }[]> = {
+  numeros: [
+    { id: 1, name: 'Números Naturales', locked: false },
+    { id: 2, name: 'Números Enteros', locked: true },
+    { id: 3, name: 'Números Racionales', locked: true },
+    { id: 4, name: 'Números Irracionales', locked: true },
+    { id: 5, name: 'Números Reales', locked: true },
+    { id: 6, name: 'Números Complejos', locked: true },
+  ],
+  algebra: [
+    { id: 1, name: 'Conceptos Básicos', locked: false },
+    { id: 2, name: 'Ecuaciones y Desigualdades', locked: true },
+    { id: 3, name: 'Sistemas de Ecuaciones', locked: true },
+    { id: 4, name: 'Polinomios y Funciones', locked: true },
+  ],
+  geometria: [
+    { id: 1, name: 'Figuras 2D', locked: false },
+    { id: 2, name: 'Figuras 3D', locked: true },
+    { id: 3, name: 'Trigonometría Básica', locked: true },
+    { id: 4, name: 'Geometría Analítica', locked: true },
+  ],
+  estadistica: [
+    { id: 1, name: 'Datos y Gráficos', locked: false },
+    { id: 2, name: 'Medidas de Tendencia', locked: true },
+    { id: 3, name: 'Probabilidad Básica', locked: true },
+    { id: 4, name: 'Distribuciones', locked: true },
+  ],
+};
+
+const worldNames: Record<World, string> = {
+  numeros: 'Números',
+  algebra: 'Álgebra',
+  geometria: 'Geometría',
+  estadistica: 'Estadística'
+};
+
+export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { userName: string, userAvatar: string, onSelectLevel: (world: World, levelId: number) => void, onOpenRanking: () => void }) {
+  const [currentWorld, setCurrentWorld] = React.useState<World>('numeros');
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -35,17 +66,33 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
         </button>
       </div>
 
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-4xl">
+        {/* Selector de Planetas/Mundos */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          {(Object.keys(worldNames) as World[]).map((w) => (
+            <button
+              key={w}
+              onClick={() => setCurrentWorld(w)}
+              className={`px-6 py-3 rounded-2xl font-black text-lg shadow-md transition-all flex items-center gap-2 border-2 ${currentWorld === w
+                  ? 'bg-pink-500 text-white border-pink-600 scale-105 shadow-pink-500/50'
+                  : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:scale-105'
+                }`}
+            >
+              Planeta {worldNames[w]}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center justify-center gap-3 mb-2">
           <MapIcon className="text-pink-500" size={32} />
-          <h2 className="text-3xl md:text-4xl font-black text-stone-800 text-center">
-            Mapa de <span className="text-pink-500">Progreso</span>
+          <h2 className="text-3xl md:text-3xl font-black text-stone-800 text-center">
+            Mapa de <span className="text-pink-500">{worldNames[currentWorld]}</span>
           </h2>
         </div>
 
-        <div className="flex items-center justify-center gap-3 mb-12">
+        <div className="flex items-center justify-center gap-3 mb-10">
           <div className="text-4xl bg-white p-2 rounded-full shadow-sm">{userAvatar || '🦊'}</div>
-          <p className="text-stone-600 text-lg m-0">
+          <p className="text-stone-600 text-lg m-0 leading-tight">
             Hola <span className="font-bold text-stone-800 text-xl">{userName}</span>,<br />selecciona un nivel para jugar
           </p>
         </div>
@@ -56,7 +103,7 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
           {/* Línea conectora lateral (visible en móvil) */}
           <div className="md:hidden absolute left-12 top-8 bottom-8 w-2 bg-stone-300 rounded-full z-0"></div>
 
-          {levels.map((level, index) => {
+          {worldsData[currentWorld].map((level, index) => {
             const isEven = index % 2 === 0;
             return (
               <div key={level.id} className={`relative z-10 flex items-center gap-6 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} w-full`}>
@@ -68,7 +115,7 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
                       ? 'bg-stone-200 border-stone-300'
                       : 'bg-indigo-500 border-indigo-300 cursor-pointer hover:scale-110 transition-transform hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]'
                     } md:mx-auto`}
-                  onClick={() => !level.locked && onSelectLevel(level.id)}
+                  onClick={() => !level.locked && onSelectLevel(currentWorld, level.id)}
                 >
                   {level.locked ? <Lock className="text-stone-400" size={24} /> : <Play className="text-white ml-1" size={28} />}
                 </div>
@@ -81,7 +128,7 @@ export function Map({ userName, userAvatar, onSelectLevel, onOpenRanking }: { us
                         ? 'bg-white/50 border-stone-200'
                         : 'bg-white border-stone-200 cursor-pointer hover:bg-stone-50 transition-colors'
                       }`}
-                    onClick={() => !level.locked && onSelectLevel(level.id)}
+                    onClick={() => !level.locked && onSelectLevel(currentWorld, level.id)}
                   >
                     <div className="text-sm font-bold text-indigo-500 mb-1 tracking-widest uppercase">Nivel {level.id}</div>
                     <h3 className={`text-2xl font-black ${level.locked ? 'text-stone-400' : 'text-stone-800'}`}>

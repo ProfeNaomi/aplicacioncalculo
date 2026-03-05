@@ -34,14 +34,39 @@ export function Login({ onLogin }: { onLogin: (name: string) => void }) {
         email,
         password,
       });
-      if (error) setErrorMsg(error.message);
-      else if (data.session) {
-        // Create profile
-        const { error: profileError } = await supabase.from('profiles').insert([
-          { id: data.session.user.id, name: name.trim(), avatar }
-        ]);
-        if (profileError) setErrorMsg(profileError.message);
+      if (error) {
+        setErrorMsg(error.message);
+      } else {
+        if (data.user) {
+          // Create profile
+          const { error: profileError } = await supabase.from('profiles').insert([
+            { id: data.user.id, name: name.trim(), avatar }
+          ]);
+          if (profileError) console.error(profileError);
+        }
+        await supabase.auth.signOut();
+        setIsLogin(true);
+        setPassword('');
+        alert('Cuenta creada exitosamente. Ahora puedes iniciar sesión.');
       }
+    }
+    setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorMsg('Por favor, ingresa tu email primero para recuperar la contraseña.');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname + '#type=recovery',
+    });
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      setErrorMsg('');
+      alert('Te hemos enviado un correo. Revisa tu bandeja de entrada o spam.');
     }
     setLoading(false);
   };
@@ -107,6 +132,19 @@ export function Login({ onLogin }: { onLogin: (name: string) => void }) {
             required
             minLength={6}
           />
+
+          {isLogin && (
+            <div className="flex justify-end -mt-2">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-indigo-500 hover:text-indigo-700 font-semibold transition-colors disabled:opacity-50"
+                disabled={loading}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+          )}
 
           <button
             type="submit"
